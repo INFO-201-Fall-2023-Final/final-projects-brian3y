@@ -16,7 +16,21 @@ final_df <- mutate_dataframe(homeless_df = homeless_df, housing_df = housing_df)
 
 # Define UI
 ui <- fluidPage (
-  
+  sidebarLayout(
+    position = 'left',
+    
+    sidebarPanel(
+      selectInput(inputId = 'state_name', 
+                  label = 'Choose a State',
+                  choices = final_df$State.Name),
+      br()
+    ),
+    
+    mainPanel(
+      h3('Comparing States'),
+      # plotlyOutput(outputId = 'scatter')
+    )
+  ),
 )
 
 
