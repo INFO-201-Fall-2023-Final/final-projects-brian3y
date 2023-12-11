@@ -1,8 +1,8 @@
 library(dplyr)
 library(stringr)
 library(ggplot2)
-library(shiny)
 library(plotly)
+
 
 df <- read.csv("final.csv")
 distinct_state <- slice(group_by(df, State.Name), 1)
@@ -10,40 +10,53 @@ distinct_state <- slice(group_by(df, State.Name), 1)
 
 ui <- fluidPage(
   titlePanel("Examining the total homeless and the unsheltered homelss"),
-
+  
   br(), # the br() function adss line breaks
-
-  p("Let's examine the homeless and 
-      (i.e. all those in the Power Five conferences (the ACC, Big Ten, Big 12, Pac-12 and SEC), plus Notre Dame).
-      Our analysis looks at how many times certain words appear in the lyrics to see how each song compares.
-      We also look at song length and speed of each song based on the official versions availible on spotify"),
+  
+  p("Let's examine the Total homeless and 
+      the unsheltered homeless people in each state and the compare to each state"),
   br(),
   sidebarLayout(
     sidebarPanel(
-      selectInput(inputId = "selected_state", label = "Choose a State", choices= distinct_state$State.Name),
+      selectInput(inputId = "selected_state", label = "Choose a State", choices= c("All", distinct_state$State.Name)),
       br()
     ),
-  mainPanel(
-    h3("Comparing unsheltered homeless and total homeless in each state"),
-    plotlyOutput(outputId = "scatter")
-  )
+    mainPanel(
+      h3("Comparing unsheltered homeless and total homeless in each state"),
+      plotlyOutput(outputId = "scatter")
+    )
   )
 )
+
 
 server <- function(input, output) {
   output$scatter <- renderPlotly({
     selected <- subset(distinct_state, State.Name == input$selected_state)
-    p <- ggplot(distinct_state,
-                aes(x = State.Name, fill = State.Name)) +
-      geom_bar(aes(y = Total.Homeless), stat = "identity", color = "black", fill = "blue", position = "stack") +
-      geom_bar(aes(y = Unsheltered.Homeless), stat = "identity", color = "black", fill = "green",position = "stack") +
-      labs(x = "Unsheltered Homeless", 
-           y = "Total.Homeless",
-           fill = "Category") +
-      theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    if (input$selected_state == "All") {
+      p <- ggplot(distinct_state,
+                  aes(x = State.Name, fill = State.Name)) +
+        geom_bar(aes(y = Total.Homeless, fill = "Total.Homeless"), stat = "identity", color = "black", position = "stack") +
+        geom_bar(aes(y = Unsheltered.Homeless, fill = "Unsheltered.Homeless"), stat = "identity", color = "black", position = "stack") +
+        scale_y_continuous(labels = scales::number_format(big.mark = ",")) +
+        labs(x = "States", 
+             y = "number of homeless people",
+             fill = "Category") +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    } else {
+      p <- ggplot(selected,
+                  aes(x = State.Name, fill = State.Name)) +
+        geom_bar(aes(y = Total.Homeless, fill = "Total.Homeless"), stat = "identity", color = "black", position = "stack", width = 0.2) +
+        geom_bar(aes(y = Unsheltered.Homeless, fill = "Unsheltered.Homeless"), stat = "identity", color = "black", position = "stack", width = 0.2) +
+        scale_y_continuous(labels = scales::number_format(big.mark = ",")) +
+        labs(x = "States", 
+             y = "number of people",
+             fill = "Category") +
+        theme_minimal()
+    }
     p <- ggplotly(p)
     return(p)
+    
   })
 }
 
