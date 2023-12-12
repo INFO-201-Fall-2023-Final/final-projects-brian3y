@@ -9,7 +9,7 @@ distinct_state <- slice(group_by(df, State.Name), 1)
 
 
 ui <- fluidPage(
-  titlePanel("Examining the total homeless and the unsheltered homelss"),
+  titlePanel("Examining the total homeless and the unsheltered homeless"),
   
   br(), # the br() function adss line breaks
   
